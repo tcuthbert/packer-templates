@@ -19,8 +19,7 @@
                 "/usr/bin/curl -O http://{{.HTTPIP}}:{{.HTTPPort}}/install-salt.sh<enter><wait5>",
                 "/usr/bin/curl -O http://{{.HTTPIP}}:{{.HTTPPort}}/install-virtualbox.sh<enter><wait5>",
                 "/usr/bin/curl -O http://{{.HTTPIP}}:{{.HTTPPort}}/poweroff.timer<enter><wait5>",
-                "/usr/bin/bash ./install-salt.sh<enter>",
-                "/usr/bin/bash ./install-virtualbox.sh<enter>"
+                "/usr/bin/bash ./install-virtualbox.sh 'salt'<enter>"
             ],
             "vboxmanage": [
 	            ["modifyvm", "{{.Name}}", "--memory", "1024"],

@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 echo "==> installing git"
 /usr/bin/pacman --noconfirm -S git

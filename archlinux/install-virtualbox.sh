@@ -8,6 +8,7 @@ PASSWORD=$(/usr/bin/openssl passwd -crypt 'vagrant')
 TIMEZONE='UTC'
 
 CONFIG_SCRIPT='/usr/local/bin/arch-config.sh'
+PROVISIONER_SCRIPT='/usr/local/bin/provisioner.sh'
 ROOT_PARTITION="${DISK}1"
 TARGET_DIR='/mnt'
 PROVISIONER="$1"
@@ -44,6 +45,12 @@ echo '==> generating the filesystem table'
 echo '==> generating the system configuration script'
 /usr/bin/install --mode=0755 /dev/null "${TARGET_DIR}${CONFIG_SCRIPT}"
 
+echo "==> bootstrapping provisioner ${PROVISIONER}"
+/usr/bin/install --mode=0755 /dev/null "${TARGET_DIR}${PROVISIONER_SCRIPT}"
+cat /root/install-$PROVISIONER.sh >> "${TARGET_DIR}${PROVISIONER_SCRIPT}"
+/usr/bin/arch-chroot ${TARGET_DIR} ${PROVISIONER_SCRIPT}
+rm "${TARGET_DIR}${PROVISIONER_SCRIPT}"
+
 cat <<-EOF > "${TARGET_DIR}${CONFIG_SCRIPT}"
 	echo '${FQDN}' > /etc/hostname
 	/usr/bin/ln -s /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
@@ -78,15 +85,14 @@ cat <<-EOF > "${TARGET_DIR}${CONFIG_SCRIPT}"
 	/usr/bin/chown vagrant:users /home/vagrant/.ssh/authorized_keys
 	/usr/bin/chmod 0600 /home/vagrant/.ssh/authorized_keys
 
-	# Install yaourt
-	echo "
-[archlinuxfr]
-SigLevel = Never
-Server = http://repo.archlinux.fr/$arch
-" >> /etc/pacman.conf && pacman -Sy yaourt
-	# clean up
-	/usr/bin/pacman -Rcns --noconfirm gptfdisk
-	/usr/bin/pacman -Scc --noconfirm
+	# install yaourt
+	echo "[archlinuxfr]
+    SigLevel = Never
+    Server = http://repo.archlinux.fr/$arch" >> /etc/pacman.conf && pacman -Sy yaourt
+
+    # clean up
+    /usr/bin/pacman -Rcns --noconfirm gptfdisk
+    /usr/bin/pacman -Scc --noconfirm
 EOF
 
 echo '==> entering chroot and configuring system'
